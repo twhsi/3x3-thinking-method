@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>33 思考法 x 90 塊筆記讀書法</title>
+  <style>
+    :root {
+      --bg: #f5f1ea;
+      --bg-2: #e8dfd3;
+      --panel: #fffaf3;
+      --cell: #fffef9;
+      --ink: #221b14;
+      --ink-soft: #5d5246;
+      --line: #dbcab3;
+      --line-strong: #b47a3a;
+      --accent: #a15d2a;
+      --accent-soft: #f4e1cc;
+      --shadow: 0 18px 38px rgba(74, 50, 24, 0.2);
+      --dock-h: 260px;
+      --dock-h-mobile: 300px;
+    }
+
+    body.dark {
+      --bg: #19140f;
+      --bg-2: #261f17;
+      --panel: #231c14;
+      --cell: #2c231a;
+      --ink: #f7ead9;
+      --ink-soft: #dcc9b0;
+      --line: #4f3d2d;
+      --line-strong: #d8aa76;
+      --accent: #efbc87;
+      --accent-soft: #3c2d20;
+      --shadow: 0 22px 38px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+      color: var(--ink);
+      line-height: 1.65;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(160, 95, 45, 0.18), transparent 35%),
+        radial-gradient(circle at 88% 14%, rgba(44, 122, 106, 0.13), transparent 28%),
+        linear-gradient(160deg, var(--bg), var(--bg-2));
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    .shell {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .workspace {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      min-height: calc(100vh - 28px);
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .download-btn {
+      border: 1px solid var(--line);
+      background: var(--cell);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .board-pane {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.45), rgba(255, 248, 236, 0.35));
+      box-shadow: var(--shadow);
+    }
+
+    .board-wrap {
+      width: min(100%, calc(100vh - 74px));
+      display: grid;
+      gap: 10px;
+    }
+
+    .axis-label {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .board {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(165deg, var(--cell), rgba(255, 248, 235, 0.9));
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      padding: 10px 10px 8px;
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 180ms ease;
+    }
+
+    .cell:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+    }
+
+    .cell.active {
+      border-color: var(--accent);
+      background: linear-gradient(165deg, var(--accent-soft), rgba(255, 238, 214, 0.9));
+      box-shadow: inset 0 0 0 1px rgba(159, 89, 37, 0.24);
+    }
+
+    .cell-id {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .cell-title {
+      display: block;
+      font-size: clamp(15px, 1.2vw, 20px);
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .cell-center {
+      border: 2px solid var(--accent);
+    }
+
+    .note-pane {
+      width: min(620px, 44vw);
+      min-width: 420px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: calc(100vh - 28px);
+      overflow: auto;
+    }
+
+    .note-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .note-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--line);
+      background: var(--cell);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .meta {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .note-card h2 {
+      margin: 2px 0 8px;
+      font-size: clamp(24px, 2vw, 32px);
+      line-height: 1.2;
+    }
+
+    .note-card p {
+      margin: 0;
+      font-size: clamp(16px, 1.25vw, 20px);
+      line-height: 1.75;
+      color: var(--ink-soft);
+      white-space: pre-wrap;
+    }
+
+    .steps {
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+
+    .steps h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--accent);
+    }
+
+    .steps ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .hint {
+      margin-top: auto;
+      font-size: 13px;
+      color: var(--ink-soft);
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+
+    @media (max-width: 980px) {
+      :root { --dock-h: var(--dock-h-mobile); }
+
+      body { overflow: hidden; }
+
+      .shell {
+        max-width: none;
+        height: 100vh;
+        padding: 12px 12px 0;
+      }
+
+      .workspace {
+        height: 100%;
+        min-height: 0;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .top-actions {
+        margin-bottom: 8px;
+      }
+
+      .note-pane {
+        order: 1;
+        width: 100%;
+        min-width: 0;
+        height: calc(100vh - var(--dock-h) - 24px);
+        overflow: auto;
+        padding: 18px 16px 40px;
+      }
+
+      .board-pane {
+        order: 2;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        height: var(--dock-h);
+        padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+      }
+
+      .board-wrap {
+        width: 100%;
+      }
+
+      .board {
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        aspect-ratio: auto;
+        gap: 8px;
+      }
+
+      .cell {
+        border-radius: 12px;
+        min-height: 0;
+        padding: 9px;
+      }
+
+      .cell-title {
+        font-size: clamp(12px, 2.9vw, 14px);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .cell-id {
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+
+      .note-card p {
+        font-size: clamp(16px, 4.2vw, 20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="top-actions">
+      <button class="download-btn" id="download-md-btn" type="button">下載九宮 Mandala-Grid Markdown</button>
+    </div>
+
+    <div class="workspace">
+      <section class="board-pane" aria-label="33 思考法九宮格">
+        <div class="board-wrap">
+          <p class="axis-label">時間軸：過去 / 現在 / 未來 x 系統軸：超系統 / 系統 / 子系統</p>
+          <div class="board" id="grid"></div>
+        </div>
+      </section>
+
+      <aside class="note-pane" aria-live="polite">
+        <div class="note-top">
+          <h1 class="note-title">3＊3思考法 x 九四快</h1>
+          <button class="theme-btn" id="theme-btn" type="button">切換明暗</button>
+        </div>
+
+        <div class="meta" id="card-id">1 核心</div>
+        <section class="note-card">
+          <h2 id="card-title">3＊3思考法</h2>
+          <p id="card-body"></p>
+        </section>
+
+        <section class="steps">
+          <h3>九四快流程（觀想變通）</h3>
+          <ol>
+            <li>觀：先做一本書的外觀 9 格總覽，抓主題、背景、問題、方法。</li>
+            <li>想：思考一個大哉問，並與自己的思考鍊連結。</li>
+            <li>變：先手寫 3 個答案，再打字擴充到 8 個，整合成九宮。</li>
+            <li>通：套入「時間 x 系統」雙軸，展開成新版 9 格。</li>
+            <li>分塊：輸出到 AI，形成連續永久筆記與 3＊3 網頁。</li>
+            <li>回寫：把 HTML 回寫成 Markdown 到 Obsidian / Heptabase。</li>
+            <li>發表 1：合成閱讀心得，收斂為文章、課程或書章節。</li>
+            <li>發表 2：改寫成社群媒體文章發布。</li>
+          </ol>
+        </section>
+
+        <div class="hint">點擊九宮格任一格，可查看對應段落內容。Note 欄位已放大，方便呈現長文。</div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const cards = [
+      {
+        id: "1.1",
+        title: "歷史脈絡與源流",
+        body: "從空海帶入曼陀羅，到 TRIZ 的 3x3 矩陣，先看方法如何跨文化演化。"
+      },
+      {
+        id: "1.2",
+        title: "AI 與知識平台生態",
+        body: "現在的超系統是 AI + 工具平台（Obsidian、Heptabase、雲端協作）。\n\n在九四快法中的做法：\n1. 定義輸入格式（觀想變通四種模板）。\n2. 找出核心議題。\n3. 找到貫穿的關鍵字。"
+      },
+      {
+        id: "1.3",
+        title: "九四快中的通：雙軸延伸（Diamond）",
+        body: "你定義的「通」是觀、想、變後的整合層。\n\n雙軸：\n時間軸：過去 / 現在 / 未來\n系統軸：子系統 / 系統 / 超系統\n\n操作重點：\n1. 每一格都回答「現在卡住點是什麼」。\n2. 再回答「跨一格後的解法是什麼」。\n3. 最後形成可交付的內容（文章、教案、書章）。"
+      },
+      {
+        id: "1.4",
+        title: "作者與方法定義",
+        body: "高木芳德把 TRIZ 轉為東方語境，核心是用雙軸拆解問題與矛盾。\n\n在九四快中的做法：\n1. 釐清目前系統主張。\n2. 延伸出時間及系統雙軸。\n3. 再次整合焦點問題。"
+      },
+      {
+        id: "1",
+        title: "3＊3思考法",
+        body: "做為九四快讀書法的一部分，做為觀想變通流程最後一步驟「通」的運用工具，打造思考鍊。"
+      },
+      {
+        id: "1.5",
+        title: "從筆記到可執行方案",
+        body: "不只做理解，要把九宮格轉成可被執行與迭代的系統。\n\n在九四快中的做法：\n1. 每格必須有關鍵字及陳述句，並和焦點問題相關。\n2. 設定驗收標準（例：字數 150 字上下、案例）。\n3. 利用網頁及九宮持續迭代。"
+      },
+      {
+        id: "1.6",
+        title: "舊工具的限制",
+        body: "過去用 Excel、OneNote、紙本曼陀羅，製作 3＊3 思考與寫出讀書心得較麻煩。\n\n在九四快中的做法：\n1. 回顧舊工具及流程耗時點。\n2. 挑出 3 個常見卡關。\n3. 建立替代流程（AI 化）。"
+      },
+      {
+        id: "1.7",
+        title: "九四快實作引擎",
+        body: "現在的子系統是你每天操作的最小單位：卡片、欄位、標籤、關聯。\n\n1. 觀：先做一本書的外觀 9 格總覽，抓主題、背景、問題、方法；內觀則針對章節、主題、人物、關鍵字深入。\n2. 想：思考一個大哉問，和自己書籍的思考鍊有關，像魯曼只有一條思考鍊。\n3. 變：先寫出紙本 3 個以上答案，打字要寫出 8 個，整合成為九宮。\n4. 通：套入「時間 x 系統」雙軸，展開成新版 9 格。\n5. 分塊成永久筆記：輸出到 AI，成為連續永久筆記，甚至變成一個 HTML 的 3＊3 網站。\n6. 回寫：把 HTML 輸出回寫成 Markdown 到 Obsidian / Heptabase，一樣是九宮模式，然後可以改編。\n7. 發表 1：由以上九四快內容合成 70 篇閱讀心得，再收斂成文章、課程或書章節。\n8. 發表 2：寫成社群媒體文章發布。\n\n自動化與再生成：\n未來重點是循環：md 九宮 -> 網頁九宮 -> 新一輪 md 九宮。\n\n在九四快的做法：\n1. 上 GitHub。\n2. 記錄每輪變更差異。\n3. 把高品質輸出納入下一輪提示詞。"
+      },
+      {
+        id: "1.8",
+        title: "百年尺度與擴散",
+        body: "把九宮格從單本書延伸到人生計畫、團隊教學與社群推廣。\n\n在九四快法中的做法：\n1. 先定義 1 年、3 年、10 年輸出。\n2. 每個時間點對應一個主題九宮。\n3. 設計可複製的教學版本。"
+      }
+    ];
+
+    const grid = document.getElementById("grid");
+    const cardId = document.getElementById("card-id");
+    const cardTitle = document.getElementById("card-title");
+    const cardBody = document.getElementById("card-body");
+    const themeBtn = document.getElementById("theme-btn");
+    const downloadMdBtn = document.getElementById("download-md-btn");
+
+    let activeIndex = 4;
+
+    function renderGrid() {
+      grid.innerHTML = "";
+      cards.forEach((card, index) => {
+        const button = document.createElement("button");
+        const isCenter = index === 4;
+        button.type = "button";
+        button.className = "cell" + (index === activeIndex ? " active" : "") + (isCenter ? " cell-center" : "");
+        button.innerHTML = `<span class="cell-id">${card.id}</span><span class="cell-title">${card.title}</span>`;
+        button.addEventListener("click", () => setActive(index));
+        grid.appendChild(button);
+      });
+    }
+
+    function setActive(index) {
+      activeIndex = index;
+      const card = cards[index];
+      cardId.textContent = card.id;
+      cardTitle.textContent = card.title;
+      cardBody.textContent = card.body;
+      renderGrid();
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      document.body.classList.toggle("dark", isDark);
+      themeBtn.textContent = isDark ? "切換成明亮" : "切換成暗色";
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem("diamond-mandala-theme");
+      if (saved === "dark" || saved === "light") {
+        applyTheme(saved);
+      } else {
+        const preferDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        applyTheme(preferDark ? "dark" : "light");
+      }
+    }
+
+    themeBtn.addEventListener("click", () => {
+      const next = document.body.classList.contains("dark") ? "light" : "dark";
+      applyTheme(next);
+      localStorage.setItem("diamond-mandala-theme", next);
+    });
+
+    function buildMandalaMarkdown() {
+      const orderedSections = [
+        { key: "1", card: cards[4] },
+        { key: "1.1", card: cards[0] },
+        { key: "1.2", card: cards[1] },
+        { key: "1.3", card: cards[2] },
+        { key: "1.4", card: cards[3] },
+        { key: "1.5", card: cards[5] },
+        { key: "1.6", card: cards[6] },
+        { key: "1.7", card: cards[7] },
+        { key: "1.8", card: cards[8] }
+      ];
+
+      function stripMermaidPrefix(text) {
+        return text
+          .replace(/```mermaid\s*/gi, "")
+          .replace(/^mermaid[:：]?\s*/gim, "")
+          .trim();
+      }
+
+      return orderedSections.map(({ key, card }) => {
+        const cleanTitle = stripMermaidPrefix(card.title);
+        const cleanBody = stripMermaidPrefix(card.body);
+        if (key === "1") {
+          return `<!--section: ${key}-->\n${cleanTitle}\n${cleanBody}\n`;
+        }
+        return `<!--section: ${key}-->\n### ${cleanTitle}\n\n${cleanBody}\n`;
+      }).join("\n");
+    }
+
+    function downloadMandalaMarkdown() {
+      const md = buildMandalaMarkdown();
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Mandala-Grid-33思考法.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    downloadMdBtn.addEventListener("click", downloadMandalaMarkdown);
+
+    setActive(activeIndex);
+    initTheme();
+  </script>
+</body>
+</html>
