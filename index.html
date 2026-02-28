@@ -237,6 +237,48 @@
       font-size: 14px;
     }
 
+    .feature-link {
+      display: block;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: linear-gradient(165deg, var(--cell), rgba(255, 246, 231, 0.92));
+      color: var(--ink);
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .feature-link:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .feature-link-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .feature-link-title {
+      display: block;
+      font-size: 18px;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .feature-link-desc {
+      display: block;
+      margin-top: 6px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+
     .hint {
       margin-top: auto;
       font-size: 13px;
@@ -369,6 +411,12 @@
             <li>發表 2：改寫成社群媒體文章發布。</li>
           </ol>
         </section>
+
+        <a class="feature-link" href="./wang-live-review/" aria-label="前往 2026年王博士直播，七種兵器之Obsidian">
+          <span class="feature-link-label">最新網站</span>
+          <span class="feature-link-title">2026年王博士直播，七種兵器之Obsidian</span>
+          <span class="feature-link-desc">查看九宮、Graph View、Jump 連結思維如何組成非線性書稿結構。</span>
+        </a>
 
         <div class="hint">點擊九宮格任一格，可查看對應段落內容。Note 欄位已放大，方便呈現長文。</div>
       </aside>
