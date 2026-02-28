@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>王博士直播課後心得｜九四快讀書法九宮網站</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --bg-2: #ddd1bf;
+      --panel: #fffaf2;
+      --cell: #fffef9;
+      --ink: #231a12;
+      --ink-soft: #5d5245;
+      --line: #d8c6af;
+      --line-strong: #b46d34;
+      --accent: #9a4f1d;
+      --accent-soft: #f3dfc8;
+      --shadow: 0 20px 44px rgba(70, 46, 24, 0.18);
+      --dock-h: 280px;
+      --dock-h-mobile: 320px;
+    }
+
+    body.dark {
+      --bg: #17120e;
+      --bg-2: #251c15;
+      --panel: #221a13;
+      --cell: #2c2219;
+      --ink: #f5e8d7;
+      --ink-soft: #d8c6ae;
+      --line: #4d3a2b;
+      --line-strong: #d8a36d;
+      --accent: #edbb88;
+      --accent-soft: #3b2b1e;
+      --shadow: 0 24px 44px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+      color: var(--ink);
+      line-height: 1.7;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(163, 87, 35, 0.16), transparent 34%),
+        radial-gradient(circle at 90% 18%, rgba(39, 112, 94, 0.12), transparent 28%),
+        linear-gradient(155deg, var(--bg), var(--bg-2));
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    .shell {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .action-btn {
+      border: 1px solid var(--line);
+      background: var(--cell);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .workspace {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      min-height: calc(100vh - 28px);
+    }
+
+    .board-pane {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.45), rgba(255, 247, 233, 0.36));
+      box-shadow: var(--shadow);
+    }
+
+    .board-wrap {
+      width: min(100%, calc(100vh - 74px));
+      display: grid;
+      gap: 10px;
+    }
+
+    .axis-label {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .board {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(165deg, var(--cell), rgba(255, 248, 235, 0.92));
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      padding: 10px 10px 8px;
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 180ms ease;
+    }
+
+    .cell:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+    }
+
+    .cell.active {
+      border-color: var(--accent);
+      background: linear-gradient(165deg, var(--accent-soft), rgba(255, 237, 216, 0.92));
+      box-shadow: inset 0 0 0 1px rgba(159, 89, 37, 0.24);
+    }
+
+    .cell-id {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .cell-title {
+      display: block;
+      font-size: clamp(15px, 1.2vw, 20px);
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .cell-center {
+      border: 2px solid var(--accent);
+    }
+
+    .note-pane {
+      width: min(620px, 44vw);
+      min-width: 420px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: calc(100vh - 28px);
+      overflow: auto;
+    }
+
+    .note-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .note-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--line);
+      background: var(--cell);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .meta {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .note-card h2 {
+      margin: 2px 0 8px;
+      font-size: clamp(24px, 2vw, 32px);
+      line-height: 1.2;
+    }
+
+    .note-card p {
+      margin: 0;
+      font-size: clamp(16px, 1.25vw, 20px);
+      line-height: 1.8;
+      color: var(--ink-soft);
+      white-space: pre-wrap;
+    }
+
+    .steps {
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+
+    .steps h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--accent);
+    }
+
+    .steps ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .hint {
+      margin-top: auto;
+      font-size: 13px;
+      color: var(--ink-soft);
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+
+    @media (max-width: 980px) {
+      :root { --dock-h: var(--dock-h-mobile); }
+
+      body { overflow: hidden; }
+
+      .shell {
+        max-width: none;
+        height: 100vh;
+        padding: 12px 12px 0;
+      }
+
+      .workspace {
+        height: 100%;
+        min-height: 0;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .note-pane {
+        order: 1;
+        width: 100%;
+        min-width: 0;
+        height: calc(100vh - var(--dock-h) - 24px);
+        overflow: auto;
+        padding: 18px 16px 40px;
+      }
+
+      .board-pane {
+        order: 2;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        height: var(--dock-h);
+        padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+      }
+
+      .board-wrap {
+        width: 100%;
+      }
+
+      .board {
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        aspect-ratio: auto;
+        gap: 8px;
+      }
+
+      .cell {
+        border-radius: 12px;
+        min-height: 0;
+        padding: 9px;
+      }
+
+      .cell-title {
+        font-size: clamp(12px, 2.9vw, 14px);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .cell-id {
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+
+      .note-card p {
+        font-size: clamp(16px, 4.2vw, 20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="top-actions">
+      <button class="action-btn" id="copy-url-btn" type="button">複製預計網址</button>
+      <button class="action-btn" id="download-md-btn" type="button">下載九宮 Markdown</button>
+    </div>
+
+    <div class="workspace">
+      <section class="board-pane" aria-label="王博士直播課後心得九宮格">
+        <div class="board-wrap">
+          <p class="axis-label">九四快輸出：觀全貌、想問題、變成八面、通往行動</p>
+          <div class="board" id="grid"></div>
+        </div>
+      </section>
+
+      <aside class="note-pane" aria-live="polite">
+        <div class="note-top">
+          <h1 class="note-title">王博士直播課後心得</h1>
+          <button class="theme-btn" id="theme-btn" type="button">切換明暗</button>
+        </div>
+
+        <div class="meta" id="card-id">1 核心</div>
+        <section class="note-card">
+          <h2 id="card-title">直播後的真正收穫</h2>
+          <p id="card-body"></p>
+        </section>
+
+        <section class="steps">
+          <h3>九四快完成方式</h3>
+          <ol>
+            <li>觀：先抓這堂直播真正想解的問題，不急著抄滿逐字稿。</li>
+            <li>想：把問題縮成一句焦點句，當成整份心得的中心宮。</li>
+            <li>變：延伸出八個角度，讓概念、方法、工具、盲點、行動都各有位置。</li>
+            <li>通：把九宮格變成可分享網站，讓課後心得不只停在筆記軟體裡。</li>
+          </ol>
+        </section>
+
+        <div class="hint">點九宮任一格可看完整段落。這頁已做成獨立 HTML，可直接放進 GitHub Pages 專案。</div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const siteUrl = "https://twhsi.github.io/3x3-thinking-method/wang-live-review/";
+
+    const cards = [
+      {
+        id: "1.1",
+        title: "直播主題",
+        body: "王博士這場直播最有力的提醒，是學習不能停在『知道很多』，而要走到『能重新講清楚、能立刻拿去用』。這讓我意識到，課後心得不是補筆記，而是把吸收過的內容重新壓縮成自己的結構。"
+      },
+      {
+        id: "1.2",
+        title: "最大收穫",
+        body: "我最有感的收穫，是把焦點放回問題本身。只要先問清楚『這堂課替我解了什麼卡點』，後面的整理就不會散。九四快的價值也在這裡：先定焦，再擴充，不讓資訊量淹沒判斷。"
+      },
+      {
+        id: "1.3",
+        title: "方法拆解",
+        body: "用九四快來看這場直播，我會分成四步。第一步看整體輪廓，第二步抓一句中心問題，第三步拆成八個面向，第四步把內容轉成可以分享的網站。這樣做的好處是，課後心得會從『線性摘要』變成『可反覆調用的結構』。"
+      },
+      {
+        id: "1.4",
+        title: "課堂亮點",
+        body: "直播最亮的地方，不只是觀念本身，而是王博士一直把觀念往應用推。這種講法很適合做九宮，因為每個角都可以落到一種可執行的理解，而不是停在抽象名詞。"
+      },
+      {
+        id: "1",
+        title: "直播後的真正收穫",
+        body: "和王博士這場直播對我最大的影響，是把『聽懂』升級成『能輸出』。用九四快讀書法整理後，我不再只是記下幾個金句，而是做出一張九宮，讓課堂重點、方法路徑、工具配置與下一步行動同時可見。這種整理方式迫使我判斷什麼是核心，什麼只是雜訊，也讓課後心得第一次真正具備了分享價值。"
+      },
+      {
+        id: "1.5",
+        title: "即刻實作",
+        body: "這堂課之後，我最應該立刻做的，不是再找更多相關影片，而是把一場直播固定做成一份九宮網站。只要每次都把中心宮寫清楚，再補上八個角度，我就能穩定累積可公開的知識作品。"
+      },
+      {
+        id: "1.6",
+        title: "盲點修正",
+        body: "我過去最大的盲點，是太容易把課後整理做成逐條摘錄，結果看起來很多，實際上卻沒有形成主張。王博士這堂直播提醒我，真正有效的課後心得必須有取捨。九宮格正好逼我刪掉重複、保留判斷。"
+      },
+      {
+        id: "1.7",
+        title: "工具配置",
+        body: "現在最順的做法是：先在 Obsidian 用 Markdown 記原始筆記，再用 AI 協助壓縮成九宮文字，最後輸出成 GitHub Pages 網站。這三層工具剛好對應素材、整理、發表，也讓直播內容能從私有筆記走到公開作品。"
+      },
+      {
+        id: "1.8",
+        title: "下一步行動",
+        body: "接下來我會把每次直播都做成同樣規格。第一，24 小時內完成中心宮；第二，48 小時內補齊八格；第三，當週上傳成網頁。只要持續做，直播就不只是聽過，而會逐漸變成自己的教學資產與寫作材料。"
+      }
+    ];
+
+    const grid = document.getElementById("grid");
+    const cardId = document.getElementById("card-id");
+    const cardTitle = document.getElementById("card-title");
+    const cardBody = document.getElementById("card-body");
+    const themeBtn = document.getElementById("theme-btn");
+    const downloadMdBtn = document.getElementById("download-md-btn");
+    const copyUrlBtn = document.getElementById("copy-url-btn");
+
+    let activeIndex = 4;
+
+    function renderGrid() {
+      grid.innerHTML = "";
+      cards.forEach((card, index) => {
+        const button = document.createElement("button");
+        const isCenter = index === 4;
+        button.type = "button";
+        button.className = "cell" + (index === activeIndex ? " active" : "") + (isCenter ? " cell-center" : "");
+        button.innerHTML = `<span class="cell-id">${card.id}</span><span class="cell-title">${card.title}</span>`;
+        button.addEventListener("click", () => setActive(index));
+        grid.appendChild(button);
+      });
+    }
+
+    function setActive(index) {
+      activeIndex = index;
+      const card = cards[index];
+      cardId.textContent = card.id;
+      cardTitle.textContent = card.title;
+      cardBody.textContent = card.body;
+      renderGrid();
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      document.body.classList.toggle("dark", isDark);
+      themeBtn.textContent = isDark ? "切換成明亮" : "切換成暗色";
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem("wang-live-review-theme");
+      if (saved === "dark" || saved === "light") {
+        applyTheme(saved);
+      } else {
+        const preferDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        applyTheme(preferDark ? "dark" : "light");
+      }
+    }
+
+    function buildMandalaMarkdown() {
+      const orderedSections = [
+        { key: "1", card: cards[4] },
+        { key: "1.1", card: cards[0] },
+        { key: "1.2", card: cards[1] },
+        { key: "1.3", card: cards[2] },
+        { key: "1.4", card: cards[3] },
+        { key: "1.5", card: cards[5] },
+        { key: "1.6", card: cards[6] },
+        { key: "1.7", card: cards[7] },
+        { key: "1.8", card: cards[8] }
+      ];
+
+      return orderedSections.map(({ key, card }) => {
+        if (key === "1") {
+          return `<!--section: ${key}-->\n${card.title}\n${card.body}\n`;
+        }
+        return `<!--section: ${key}-->\n### ${card.title}\n\n${card.body}\n`;
+      }).join("\n");
+    }
+
+    function downloadMandalaMarkdown() {
+      const md = buildMandalaMarkdown();
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Mandala-Grid-王博士直播課後心得.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function copyUrl() {
+      try {
+        await navigator.clipboard.writeText(siteUrl);
+        copyUrlBtn.textContent = "已複製網址";
+        window.setTimeout(() => {
+          copyUrlBtn.textContent = "複製預計網址";
+        }, 1200);
+      } catch (error) {
+        window.alert(siteUrl);
+      }
+    }
+
+    themeBtn.addEventListener("click", () => {
+      const next = document.body.classList.contains("dark") ? "light" : "dark";
+      applyTheme(next);
+      localStorage.setItem("wang-live-review-theme", next);
+    });
+
+    downloadMdBtn.addEventListener("click", downloadMandalaMarkdown);
+    copyUrlBtn.addEventListener("click", copyUrl);
+
+    setActive(activeIndex);
+    initTheme();
+  </script>
+</body>
+</html>
