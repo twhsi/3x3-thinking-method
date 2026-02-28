@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>李娟的關鍵種雪豹研究｜九宮網站</title>
+  <style>
+    :root {
+      --bg: #f2eee6;
+      --bg-2: #cfd8d2;
+      --panel: #fffaf2;
+      --cell: #fffdfa;
+      --ink: #1f1b17;
+      --ink-soft: #5b564d;
+      --line: #d8cdbf;
+      --line-strong: #8f7554;
+      --accent: #486b5d;
+      --accent-2: #a65a2a;
+      --accent-soft: #e6efe9;
+      --shadow: 0 22px 46px rgba(54, 48, 37, 0.16);
+      --dock-h: 280px;
+      --dock-h-mobile: 320px;
+    }
+
+    body.dark {
+      --bg: #121617;
+      --bg-2: #24302a;
+      --panel: #1a201e;
+      --cell: #232b28;
+      --ink: #f1ece2;
+      --ink-soft: #d0c6b6;
+      --line: #3d4a45;
+      --line-strong: #8ea694;
+      --accent: #a9c6b7;
+      --accent-2: #e2a679;
+      --accent-soft: #29332f;
+      --shadow: 0 24px 44px rgba(0, 0, 0, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+      color: var(--ink);
+      line-height: 1.7;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(166, 90, 42, 0.16), transparent 28%),
+        radial-gradient(circle at 84% 18%, rgba(72, 107, 93, 0.18), transparent 26%),
+        linear-gradient(160deg, var(--bg), var(--bg-2));
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    .shell {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .action-btn {
+      border: 1px solid var(--line);
+      background: var(--cell);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .workspace {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      min-height: calc(100vh - 28px);
+    }
+
+    .board-pane {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.44), rgba(245, 250, 247, 0.34));
+      box-shadow: var(--shadow);
+    }
+
+    .board-wrap {
+      width: min(100%, calc(100vh - 74px));
+      display: grid;
+      gap: 10px;
+    }
+
+    .axis-label {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent-2);
+      text-align: center;
+    }
+
+    .board {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(165deg, var(--cell), rgba(255, 250, 242, 0.94));
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      padding: 10px 10px 8px;
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 180ms ease;
+    }
+
+    .cell:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+    }
+
+    .cell.active {
+      border-color: var(--accent);
+      background: linear-gradient(165deg, var(--accent-soft), rgba(233, 243, 237, 0.94));
+      box-shadow: inset 0 0 0 1px rgba(72, 107, 93, 0.22);
+    }
+
+    .cell-center {
+      border: 2px solid var(--accent-2);
+    }
+
+    .cell-id {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-2);
+      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .cell-title {
+      display: block;
+      font-size: clamp(15px, 1.2vw, 20px);
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .note-pane {
+      width: min(640px, 45vw);
+      min-width: 420px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: calc(100vh - 28px);
+      overflow: auto;
+    }
+
+    .note-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .note-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--line);
+      background: var(--cell);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .meta {
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .note-card h2 {
+      margin: 2px 0 8px;
+      font-size: clamp(24px, 2vw, 32px);
+      line-height: 1.2;
+    }
+
+    .note-card p {
+      margin: 0;
+      font-size: clamp(16px, 1.24vw, 20px);
+      line-height: 1.85;
+      color: var(--ink-soft);
+      white-space: pre-wrap;
+    }
+
+    .steps {
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+
+    .steps h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--accent);
+    }
+
+    .steps ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .hint {
+      margin-top: auto;
+      font-size: 13px;
+      color: var(--ink-soft);
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+
+    @media (max-width: 980px) {
+      :root { --dock-h: var(--dock-h-mobile); }
+
+      body { overflow: hidden; }
+
+      .shell {
+        max-width: none;
+        height: 100vh;
+        padding: 12px 12px 0;
+      }
+
+      .workspace {
+        height: 100%;
+        min-height: 0;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .note-pane {
+        order: 1;
+        width: 100%;
+        min-width: 0;
+        height: calc(100vh - var(--dock-h) - 24px);
+        overflow: auto;
+        padding: 18px 16px 40px;
+      }
+
+      .board-pane {
+        order: 2;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        height: var(--dock-h);
+        padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+      }
+
+      .board-wrap {
+        width: 100%;
+      }
+
+      .board {
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        aspect-ratio: auto;
+        gap: 8px;
+      }
+
+      .cell {
+        border-radius: 12px;
+        min-height: 0;
+        padding: 9px;
+      }
+
+      .cell-title {
+        font-size: clamp(12px, 2.9vw, 14px);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .cell-id {
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+
+      .note-card p {
+        font-size: clamp(16px, 4.2vw, 20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="top-actions">
+      <button class="action-btn" id="copy-url-btn" type="button">複製預計網址</button>
+      <button class="action-btn" id="download-md-btn" type="button">下載九宮 Markdown</button>
+    </div>
+
+    <div class="workspace">
+      <section class="board-pane" aria-label="李娟的關鍵種雪豹研究九宮格">
+        <div class="board-wrap">
+          <p class="axis-label">九宮視角：田野相遇、痕跡辨識、相機監測、食性與關鍵種、牧民保護、神山巡護、氣候風險</p>
+          <div class="board" id="grid"></div>
+        </div>
+      </section>
+
+      <aside class="note-pane" aria-live="polite">
+        <div class="note-top">
+          <h1 class="note-title">李娟的關鍵種雪豹研究</h1>
+          <button class="theme-btn" id="theme-btn" type="button">切換明暗</button>
+        </div>
+
+        <div class="meta" id="card-id">1 核心</div>
+        <section class="note-card">
+          <h2 id="card-title">雪豹不是只是一隻大貓</h2>
+          <p id="card-body"></p>
+        </section>
+
+        <section class="steps">
+          <h3>這份九宮的四個核心判斷</h3>
+          <ol>
+            <li>李娟的研究不是只在找雪豹，而是在重建整個三江源高山生態系。</li>
+            <li>雪豹是[[關鍵種]]，會控制食草動物，也會把能量傳遞給食腐動物。</li>
+            <li>保育工作不能只靠相機與論文，還要面對牧民、寺廟、巡護員與邊境現實。</li>
+            <li>氣候變遷與棲地連通性，會決定未來雪豹能不能持續存活與遷移。</li>
+          </ol>
+        </section>
+
+        <div class="hint">點九宮任一格可查看完整段落。這份網頁依照你提供的筆記重組，並附上可下載的 Mandala Markdown 版本。</div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const siteUrl = "https://twhsi.github.io/3x3-thinking-method/li-juan-snow-leopard/";
+
+    const cards = [
+      {
+        id: "1.1",
+        title: "田野相遇",
+        body: "李娟被雪豹真正抓住，不是抽象概念，而是野外相遇。她提到十米高的山洞、岩羊的屍體，還有那次『噗的一聲』，雪豹突然出現在距離她兩米的位置。她後來的判斷是，雪豹當時不是想攻擊，而是想獨享食物。正是這種高海拔、帶著危險感的經驗，讓她決定把雪豹當成博士論文主題。"
+      },
+      {
+        id: "1.2",
+        title: "痕跡辨識",
+        body: "多數時候研究者根本看不到雪豹，只能看牠留下的痕跡。冬天最容易找，因為貓科動物足墊接近梯形，通常沒有指甲印，還常有尾巴拖行的痕線。不是冬天時，就要看刨坑、撒尿和標記點。糞便尤其珍貴，直徑約三厘米，研究隊常常滿山找糞，一天能找到一陀就已經很有價值。"
+      },
+      {
+        id: "1.3",
+        title: "紅外相機",
+        body: "紅外觸動相機把雪豹研究從偶遇推向系統性監測。相機通常架在雪豹常走路徑的窄點，而且一個點放兩台，避免角度失真或只拍到半身。研究者甚至要像雪豹一樣趴下去看角度。李娟團隊設了 26 個點、52 台相機，最後辨識出 29 隻雪豹，也拍到小雪豹、剛狩獵完滿臉是血的個體，以及好奇盯著鏡頭的畫面。"
+      },
+      {
+        id: "1.4",
+        title: "標記與斑紋",
+        body: "雪豹身上的玫瑰狀斑紋像指紋一樣，可用來辨識個體。研究者也會盯著山谷十字路口、銳角石頭等標記熱點，因為雪豹會在那裡蹭、刨坑、撒尿留下訊息。更重要的是，同域分布的其他物種也可能在同一點標記。這讓一個小小的石頭，不只是雪豹的路標，而像整個高山動物社群共享的告示欄。"
+      },
+      {
+        id: "1",
+        title: "雪豹不是只是一隻大貓",
+        body: "李娟在三江源做了二十多年雪豹研究，從痕跡、糞便、紅外相機、食性分析，到牧民訪談與氣候變遷模型，慢慢把一個物種擴展成整個高山生態系的故事。她不只看到雪豹，也看到雪豹如何控制食草動物、餵養食腐動物、牽動牧民生計、宗教保護與跨國棲地連通。這份九宮的中心判斷是：雪豹是關鍵種，保護雪豹，其實是在保護整個青藏高原高山系統。"
+      },
+      {
+        id: "1.5",
+        title: "食性與關鍵種",
+        body: "研究雪豹食性時，李娟會從糞便中的毛髮下手，經過清洗、烘乾、脫脂等程序，判斷牠吃的是野生動物還是家畜。三江源的重要發現是，雪豹主要吃岩羊等食草動物，所以牠位在三級食物網上方，能調節食草動物數量，維持群落穩定。雪豹還會把獵物殘骸留給別的動物，例如棕熊吃雪豹剩下的岩羊。牠不只是掠食者，也是整個系統能量流動的節點。"
+      },
+      {
+        id: "1.6",
+        title: "牧民與盜獵",
+        body: "保護雪豹不能只談生態，也要理解人的壓力。李娟訪談了 144 戶牧民，發現家畜死亡原因很複雜，有的是先病死才被野生動物吃掉，不能簡單全算到雪豹頭上。不同地區的衝突程度也不同；三江源因野生獵物多，雪豹對家畜的依賴較低。但盜獵和貿易仍是真實威脅，原因包括毛皮和骨頭，背後還有 1950 到 1960 年代把雪豹當害獸、甚至出口換外匯的歷史背景。"
+      },
+      {
+        id: "1.7",
+        title: "神山與巡護",
+        body: "三江源比較好的雪豹棲地，常常和寺廟、神山重合。寺廟常設在高海拔、前有河流、後有特定山形的位置，而這些地景也常是雪豹偏好的棲地。神山不能打獵、不能放牧，於是天然形成保護區。喇嘛與地方文化在無意中守住了雪豹的家。今天再加上動物監測與巡護制度，形成一萬七千個生態巡護員的網路，保育才變成真正落地的社會系統。"
+      },
+      {
+        id: "1.8",
+        title: "氣候變遷與共生",
+        body: "李娟的野外工作非常艱苦，騎摩托車五六個小時、天黑沒油、零下十幾二十度、長時間沒有手機訊號，也沒有蔬菜水果。正因為有這種長期累積，研究才有能力回答更大的問題。她與全球研究者評估約 6000 個雪豹棲地後，推估有 23% 棲地可能消失。林線與雪線變動、金錢豹上移、疾病、邊境阻隔與保護資源有限，都會改變雪豹的未來。最後問題回到共生：城市中的我們、牧民、雪豹與其他物種，能否找到可持續的路徑？"
+      }
+    ];
+
+    const grid = document.getElementById("grid");
+    const cardId = document.getElementById("card-id");
+    const cardTitle = document.getElementById("card-title");
+    const cardBody = document.getElementById("card-body");
+    const themeBtn = document.getElementById("theme-btn");
+    const downloadMdBtn = document.getElementById("download-md-btn");
+    const copyUrlBtn = document.getElementById("copy-url-btn");
+
+    let activeIndex = 4;
+
+    function renderGrid() {
+      grid.innerHTML = "";
+      cards.forEach((card, index) => {
+        const button = document.createElement("button");
+        const isCenter = index === 4;
+        button.type = "button";
+        button.className = "cell" + (index === activeIndex ? " active" : "") + (isCenter ? " cell-center" : "");
+        button.innerHTML = `<span class="cell-id">${card.id}</span><span class="cell-title">${card.title}</span>`;
+        button.addEventListener("click", () => setActive(index));
+        grid.appendChild(button);
+      });
+    }
+
+    function setActive(index) {
+      activeIndex = index;
+      const card = cards[index];
+      cardId.textContent = card.id;
+      cardTitle.textContent = card.title;
+      cardBody.textContent = card.body;
+      renderGrid();
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      document.body.classList.toggle("dark", isDark);
+      themeBtn.textContent = isDark ? "切換成明亮" : "切換成暗色";
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem("li-juan-snow-leopard-theme");
+      if (saved === "dark" || saved === "light") {
+        applyTheme(saved);
+      } else {
+        const preferDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        applyTheme(preferDark ? "dark" : "light");
+      }
+    }
+
+    function buildMandalaMarkdown() {
+      const orderedSections = [
+        {
+          key: "1",
+          title: "李娟的關鍵種雪豹研究",
+          body: "**中心摘要｜雪豹不是只是一隻大貓，而是整個高山群落的關鍵種**\n\n李娟在三江源做了二十多年雪豹研究，從痕跡、糞便、紅外相機、食性分析，到牧民訪談與氣候變遷模型，慢慢把一個物種擴展成整個高山生態系的故事。她不只看到雪豹，也看到雪豹如何控制食草動物、餵養食腐動物、牽動牧民生計、宗教保護與跨國棲地連通。這份九宮的核心判斷是：雪豹是[[關鍵種]]，保護雪豹，其實是在保護整個青藏高原高山系統。"
+        },
+        {
+          key: "1.1",
+          title: "田野相遇：從山洞到兩米距離",
+          body: "李娟一開始被雪豹吸引，和她真的在野外看見雪豹有關。她提到十米高的山洞、岩羊的屍體，還有那次經典的相遇:「噗的一聲」，雪豹就在距離她兩米的地方出現。這不是動物園式的觀看，而是高海拔野外、帶著危險與震撼的遭遇。她的洞見很直接，雪豹不是來攻擊，而是想獨享剛得到的美食。這種近距離經驗，也讓她決定把雪豹當成博士論文的主題。"
+        },
+        {
+          key: "1.2",
+          title: "找雪豹：痕跡、足墊、刨坑與糞便",
+          body: "真正的研究多數時候不是「看到雪豹」，而是讀懂牠留下的線索。冬天最容易找痕跡，因為貓科動物的足墊接近梯形，通常沒有指甲印，還會拖著長尾巴留下痕線。不是冬天時，就要看刨坑、撒尿與標記點。糞便更珍貴，直徑約三厘米，團隊常常得滿山找糞，理想情況下一天找到一陀就很有價值。雪豹研究很大一部分，其實就是靠這些間接證據，重建牠的行走規律與活動範圍。"
+        },
+        {
+          key: "1.3",
+          title: "相機監測：26 個點、52 台相機、辨識 29 隻",
+          body: "紅外觸動相機讓雪豹研究從碰運氣變成比較系統性的監測。做法是把相機架在雪豹常走路徑的窄點，也就是牠幾乎必經的位置，通常一個點放兩台，避免角度偏掉或只拍到半身。研究者甚至要像雪豹一樣趴下來找角度，確認鏡頭高度與方向正確。李娟的團隊設了 26 個點、52 台相機，最後辨識出 29 隻雪豹，被視為全球密度最高的地區之一。她也真的在野外看到十次雪豹，還拍到滿臉是血、剛狩獵完的小雪豹，以及好奇盯著相機的畫面。"
+        },
+        {
+          key: "1.4",
+          title: "斑紋、標記點與同域物種",
+          body: "雪豹個體辨識靠的不只是運氣，而是身上的斑紋。那些玫瑰狀斑塊像指紋一樣，每一隻都不同，而且照片裡的斑紋本身不會亂動，所以可以長期比對。除了辨識個體，研究者也會觀察山谷十字路口、銳角石頭這類標記熱點，因為雪豹會在那裡蹭、刨坑、撒尿、留下氣味。更有意思的是，同域分布的其他物種也可能在同一個點標記。於是單一標記點不只是雪豹的訊息板，而像是整個高山動物社群共享的告示欄。"
+        },
+        {
+          key: "1.5",
+          title: "食性與關鍵種：牠吃岩羊，也餵養別的生命",
+          body: "李娟研究雪豹食性時，會從糞便中的毛髮下手，經過清洗、烘乾、脫脂等程序，判斷牠吃的是野生動物還是家畜。三江源的結果很重要: 雪豹主要吃岩羊等食草動物。這讓牠成為三級食物網上的調節者，可以控制食草動物數量，維持群落穩定性，這正是[[關鍵種]]的意義。雪豹也不只是「吃」，牠留下的獵物殘骸還會被其他動物利用，例如棕熊會去吃雪豹剩下的岩羊。換句話說，雪豹既控制上游，也餵養下游。"
+        },
+        {
+          key: "1.6",
+          title: "牧民、盜獵與保護現實",
+          body: "保護雪豹不能只談生態，還要面對人的衝突。李娟做過 144 戶牧民訪談，也克服自己社恐去理解在地經驗。她發現家畜死亡原因很複雜，有的是生病後才被野生動物吃掉，不一定能直接怪到雪豹身上。不同地區情況也不同，像印度、巴基斯坦有些地方雪豹吃家畜比例更高，但三江源因為野生獵物多，情況較好。另一方面，雪豹仍面臨盜獵與貿易壓力，原因包括毛皮與骨頭。她還整理中國、美國等地的新聞，對照盜獵點與貿易點，提醒我們這問題不只是山上的事，也牽涉歷史上把雪豹當害獸、甚至出口換外匯的制度背景。"
+        },
+        {
+          key: "1.7",
+          title: "神山、寺廟與巡護員網路",
+          body: "三江源比較好的雪豹棲地，常常和寺廟、神山重合。這不是巧合。寺廟往往位在高海拔、前有河流、後有特定山形的地方，而這些條件也常和雪豹偏好的棲地重疊。更關鍵的是，神山通常不能打獵、不能放牧，於是天然形成保護區。喇嘛與巡護神山的文化，等於幫雪豹留下棲地。現代保護又把這套文化資產與動物監測結合起來，形成一萬七千個生態巡護員的網路。這裡的保育不是單靠科學家，而是宗教地景、牧民與制度共同撐起來。"
+        },
+        {
+          key: "1.8",
+          title: "艱苦田野、氣候變遷與共生思考",
+          body: "李娟的研究也讓人看到野外工作的艱苦: 騎摩托車五六個小時，天黑沒油，氣溫降到零下十幾二十度；一個多月沒有手機訊號，沒有蔬菜水果，也沒辦法洗澡，回縣城要七個小時。正因為有這些長期工作，雪豹保育才開始能面對更大的問題，例如中亞與青藏高原的氣候變遷風險。她和全球研究者評估約 6000 個雪豹棲地後，推估有 23% 棲地可能消失；林線與雪線改變，金錢豹上移、疾病風險增加、邊境阻隔與保護資源有限，都會影響雪豹未來。這讓整個研究最後回到一個更大的問題: 城市中的我們、三江源牧民、雪豹與其他物種，能不能找到一條真正可持續的共生路徑？"
+        }
+      ];
+
+      return [
+        "---",
+        "mandala: true",
+        "tags:",
+        "  - 雪豹",
+        "  - 三江源",
+        "  - 關鍵種",
+        "---",
+        ""
+      ].join("\n") + orderedSections.map(({ key, title, body }) => {
+        if (key === "1") {
+          return `<!--section: ${key}-->\n${title}\n\n${body}\n`;
+        }
+        return `<!--section: ${key}-->\n## ${title}\n\n${body}\n`;
+      }).join("\n");
+    }
+
+    function downloadMandalaMarkdown() {
+      const md = buildMandalaMarkdown();
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "9️⃣ 李娟的關鍵種雪豹研究.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function copyUrl() {
+      try {
+        await navigator.clipboard.writeText(siteUrl);
+        copyUrlBtn.textContent = "已複製網址";
+        window.setTimeout(() => {
+          copyUrlBtn.textContent = "複製預計網址";
+        }, 1200);
+      } catch (error) {
+        window.alert(siteUrl);
+      }
+    }
+
+    themeBtn.addEventListener("click", () => {
+      const next = document.body.classList.contains("dark") ? "light" : "dark";
+      applyTheme(next);
+      localStorage.setItem("li-juan-snow-leopard-theme", next);
+    });
+
+    downloadMdBtn.addEventListener("click", downloadMandalaMarkdown);
+    copyUrlBtn.addEventListener("click", copyUrl);
+
+    setActive(activeIndex);
+    initTheme();
+  </script>
+</body>
+</html>
